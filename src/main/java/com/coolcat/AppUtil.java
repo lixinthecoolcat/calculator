@@ -86,7 +86,7 @@ public class AppUtil {
 
         //go from left to right, locate value exp and get the value, replace value name in exp by calculated
         //value, repeat, until no let and only normal operations
-        String expr = input.trim();
+        String expr = input;
         while (input.contains(Operator.let.name())) {
             int letPos = input.indexOf(Operator.let.name());
             int letEnd = findCommaPosition(input.substring(letPos)) + letPos;

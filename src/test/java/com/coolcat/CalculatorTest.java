@@ -5,7 +5,11 @@ package com.coolcat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import org.junit.Test;
-
+/*
+This class tests method doCalculate in Calculator class. It requires checked valid input which
+is the output of validateInput from AppUtil.
+Be aware, when adding new test data, make sure there is no space within input string.
+ */
 public class CalculatorTest {
     public static final String LET_MULT_LAYER = "let(a,let(b,10,add(b,b)),let(b,20,add(a,b)))";
     public static final String LET_SIGNLE_LAYER = "let(a,5,let(b,mult(a,10),add(b,a)))";

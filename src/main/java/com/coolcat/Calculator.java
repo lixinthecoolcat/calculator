@@ -115,7 +115,7 @@ public class Calculator {
         }
         Node rootNode = TreeUtil.parseNode(input, null);
         calculate(rootNode);
-        logger.info(rootNode.data);
+        System.out.println("The calculated result is: "+rootNode.data);
         return rootNode.data;
 
     }

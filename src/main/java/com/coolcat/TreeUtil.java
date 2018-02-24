@@ -30,8 +30,8 @@ public class TreeUtil {
             String left = input.substring(0, position);
             String right = input.substring(position + 1);
 
-            parseBranch(left.trim(), rootNode, Direction.left);
-            parseBranch(right.trim(), rootNode, Direction.right);
+            parseBranch(left, rootNode, Direction.left);
+            parseBranch(right, rootNode, Direction.right);
         }
 
         return rootNode;
@@ -62,7 +62,7 @@ public class TreeUtil {
     private static Operator findOperator(String input) {
         String cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
         for (Operator op : Operator.values()) {
-            if (op.name().toLowerCase().equals(cmd.trim().toLowerCase())) {
+            if (op.name().toLowerCase().equals(cmd.toLowerCase())) {
                 return op;
             }
         }
