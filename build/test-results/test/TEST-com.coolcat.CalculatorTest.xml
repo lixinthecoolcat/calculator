@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.coolcat.CalculatorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2018-02-24T11:18:55" hostname="DESKTOP-LJ03LFQ" time="0.531">
-  <properties/>
-  <testcase name="testLetWithMultiLayer" classname="com.coolcat.CalculatorTest" time="0.531"/>
-  <system-out><![CDATA[40
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
