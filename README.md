@@ -15,4 +15,5 @@ Besides the operator functions, this system supports command line options: -h an
 
 Note: use fatJar task to build standalone executable jar file.
 Note: for better user experience, this system running in loop. Use crl-c to quit.
+Note: modify configure file if prefer log to file. Default is log to console.
 
