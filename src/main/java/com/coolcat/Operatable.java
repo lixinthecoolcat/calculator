@@ -1,5 +1,7 @@
 package com.coolcat;
 
-public interface Operatable {
-    Double operate(Node node);
+interface Operatable {
+    default Double operate(Node node) {
+        return node.getData();
+    }
 }

@@ -3,7 +3,7 @@ package com.coolcat;
 /**
  * @author cool cat
  */
-public class Node {
+class Node {
     Node(Operator op) {
         this.data = 0.0;
         this.op = op;

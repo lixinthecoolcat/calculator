@@ -1,24 +1,31 @@
 package com.coolcat;
 
-public class TreeUtil {
-    static final Character COMMA = ',';
-    static final Character BRACKET_LEFT = '(';
-    static final Character BRACKET_RIGHT = ')';
+import java.util.Arrays;
+
+import static com.coolcat.AppUtil.*;
+
+/**
+ * Utility class for operator/calculation tree
+ *
+ * @author cool cat
+ */
+class TreeUtil {
+
     private enum Direction {
         left,
         right
     }
 
     /**
-     * @param input expression string
+     * @param input    expression string
      * @param rootNode operator tree node
      * @return operator tree node
      */
-    public static Node parseNode(String input, Node rootNode) {
+    static Node parseNode(String input, Node rootNode) {
         //have a non-null root first before recursive loop
         if (rootNode == null) {
             rootNode = new Node(findOperator(input));
-           input = stripLayer(input,rootNode.getOp());
+            input = stripLayer(input, rootNode.getOp());
         }
         if (!input.isEmpty()) {
 
@@ -26,7 +33,7 @@ public class TreeUtil {
                 // no comma means down to digit, set input empty to get out.
                 input = "";
             }
-            int position = AppUtil.findCommaPosition(input);
+            int position = findCommaPosition(input);
             String left = input.substring(0, position);
             String right = input.substring(position + 1);
 
@@ -43,7 +50,7 @@ public class TreeUtil {
         if (str.contains(Character.toString(COMMA))) {
             Operator op = findOperator(str);
             current = new Node(op);
-            str = stripLayer(str,op);
+            str = stripLayer(str, op);
         } else {// data node
             current = new Node(Double.parseDouble(str));
             str = "";
@@ -57,23 +64,14 @@ public class TreeUtil {
         parseNode(str, current);
     }
 
-    private static String stripLayer(String input,Operator op){
+    private static String stripLayer(String input, Operator op) {
         return input.substring(op.name().length() + 1, input.length() - 1);
     }
 
     private static Operator findOperator(String input) {
         String cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
-        Operator currentOp = null;
-        for (Operator op : Operator.values()) {
-            if (op.name().toLowerCase().equals(cmd.toLowerCase())) {
-                currentOp = op;
-            }
-        }
-        if(currentOp == null){
-            throw new IllegalArgumentException("Syntax error: unrecognized operator.");
-        }else {
-            return currentOp;
-        }
+        return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Syntax error: unrecognized operator."));
     }
 
 }

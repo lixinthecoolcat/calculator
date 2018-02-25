@@ -7,9 +7,24 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import java.io.StringWriter;
 
-import static com.coolcat.TreeUtil.*;
+/**
+ * Utility class for app
+ *
+ * @author cool cat
+ */
 
-public class AppUtil {
+class AppUtil {
+    static final Character COMMA = ',';
+    static final Character BRACKET_LEFT = '(';
+    static final Character BRACKET_RIGHT = ')';
+
+    /**
+     * When a expr stripped operator and out layer of brackets, the first comma
+     * after balanced bracket pairs is the one separating this particular expr's arguments
+     *
+     * @param input input string
+     * @return find pos for outer layer argument delimiter
+     */
     public static int findCommaPosition(String input) {
         // layer of expressions
         int layer = 0;
@@ -31,7 +46,11 @@ public class AppUtil {
         return position;
     }
 
-
+    /**
+     * Allow change level at runtime
+     *
+     * @param level logging level
+     */
     static void setLogLevel(Level level) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
@@ -46,7 +65,7 @@ public class AppUtil {
      * @param input input String
      * @return boolean
      */
-    public static String validateInput(String input) {
+    static String validateInput(String input) {
         int layer = 0;
         boolean balanced = false;
         boolean hasInvalidCh;
@@ -82,28 +101,42 @@ public class AppUtil {
 
     }
 
-    public static String preprocess(String input) {
-
+    /**
+     * Translate 'let' operator into normal operator. remove all the let phrases in expr
+     *
+     * @param input expression string with let
+     * @return expression string without let
+     */
+    static String preProcess(String input) {
+        int letLayerLength = "let(".length();
         //go from left to right, locate value exp and get the value, replace value name in exp by calculated
         //value, repeat, until no let and only normal operations
         String expr = input;
         while (input.contains(Operator.let.name())) {
             int letPos = input.indexOf(Operator.let.name());
             int letEnd = findCommaPosition(input.substring(letPos)) + letPos;
-            int vNamePos = findCommaPosition(input.substring(letPos + 4));
-            String vName = input.substring(letPos + 4, letPos + 4 + vNamePos);//"let("
-            int subStrBeginAt = letPos + 4 + vName.length() + 1;
+            int vNamePos = findCommaPosition(input.substring(letPos + letLayerLength));
+            String vName = input.substring(letPos + letLayerLength, letPos + letLayerLength + vNamePos);//"let("
+            int subStrBeginAt = letPos + letLayerLength + vName.length() + 1;
             int vValuePos = findCommaPosition(input.substring(subStrBeginAt));
             String vValue = input.substring(subStrBeginAt, subStrBeginAt + vValuePos);
             expr = input.substring(subStrBeginAt + vValuePos + 1, letEnd);
             if (vValue.contains(Operator.let.name())) {
-                vValue = preprocess(vValue);
+                vValue = preProcess(vValue);
             }
 
-            //Since we don't know what embedded in let exp, f.g. let(b,20,add(a,b)) as outer layer, the "a" within add(a,b) should be replaced by an evaluated
-            //inner layer let to add(10,10). Therefore we don't want to replace letter a as part of "add", but do want to replace the a as part of (a,b)
-            //Simple way is to define a syntax requirement for let, only use single letter as variable name. Otherwise "add" can be variable name which would be really
-            //complex things. So here is an assumption: let first param must be single letter.
+            /*Since we don't know what embedded in let exp, f.g. let(a,10,add(a,a)), here is a bit tricky part.
+            because we don't want to replace letter 'a' as part of "add", but do want to replace the 'a' as part of (a,a)
+            I am sure there will be a way to solve it. But it will add code complicity without any gain.
+            After all, the value name in let expr is just a symbol.It make no improvement for functional or user experience
+            to use any length of string to be the value name.Simple way is to define a syntax requirement for let,
+            only use single letter as variable name.
+            So here is an assumption(#2): let first param must be single letter.
+            */
+            if (vName.length() > 1) {
+                throw new IllegalArgumentException("let expr's value name should be single letter. ");
+            }
+
             char[] tmp = expr.toCharArray();
             int replaceBegin = 0;
             for (int i = 1; i < tmp.length - 1; i++) {

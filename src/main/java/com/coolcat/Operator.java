@@ -3,7 +3,9 @@ package com.coolcat;
 public enum Operator implements Operatable {
     add {
         @Override
-        public Double operate(Node node) { return node.left.getData() + node.right.getData(); }
+        public Double operate(Node node) {
+            return node.left.getData() + node.right.getData();
+        }
 
     }, sub {
         @Override
@@ -27,19 +29,8 @@ public enum Operator implements Operatable {
             }
         }
 
-    }, nil {
-        @Override
-        public Double operate(Node node) {
-            return node.getData();
-        }
-
-    }, let {
-        @Override
-        public Double operate(Node node) {
-            return node.getData();
-        }
-
-    }
+    },
+    nil, let
 }
 
 
