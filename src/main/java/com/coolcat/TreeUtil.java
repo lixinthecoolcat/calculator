@@ -18,7 +18,7 @@ public class TreeUtil {
         //have a non-null root first before recursive loop
         if (rootNode == null) {
             rootNode = new Node(findOperator(input));
-            input = input.substring(rootNode.op.name().length() + 1, input.length() - 1);
+           input = stripLayer(input,rootNode.getOp());
         }
         if (!input.isEmpty()) {
 
@@ -37,17 +37,15 @@ public class TreeUtil {
         return rootNode;
     }
 
-
-
     private static void parseBranch(String str, Node rootNode, Direction dir) {
         Node current;
         // if contains comma, means it is still an expression
         if (str.contains(Character.toString(COMMA))) {
             Operator op = findOperator(str);
             current = new Node(op);
-            str = str.substring(op.name().length() + 1, str.length() - 1);
+            str = stripLayer(str,op);
         } else {// data node
-            current = new Node(Integer.parseInt(str));
+            current = new Node(Double.parseDouble(str));
             str = "";
         }
 
@@ -59,14 +57,23 @@ public class TreeUtil {
         parseNode(str, current);
     }
 
+    private static String stripLayer(String input,Operator op){
+        return input.substring(op.name().length() + 1, input.length() - 1);
+    }
+
     private static Operator findOperator(String input) {
         String cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
+        Operator currentOp = null;
         for (Operator op : Operator.values()) {
             if (op.name().toLowerCase().equals(cmd.toLowerCase())) {
-                return op;
+                currentOp = op;
             }
         }
-        return Operator.nil;
+        if(currentOp == null){
+            throw new IllegalArgumentException("Syntax error: unrecognized operator.");
+        }else {
+            return currentOp;
+        }
     }
 
 }

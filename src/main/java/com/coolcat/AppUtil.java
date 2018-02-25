@@ -103,7 +103,7 @@ public class AppUtil {
             //Since we don't know what embedded in let exp, f.g. let(b,20,add(a,b)) as outer layer, the "a" within add(a,b) should be replaced by an evaluated
             //inner layer let to add(10,10). Therefore we don't want to replace letter a as part of "add", but do want to replace the a as part of (a,b)
             //Simple way is to define a syntax requirement for let, only use single letter as variable name. Otherwise "add" can be variable name which would be really
-            //complex things. So here is an sumption: let firt param must be single letter.
+            //complex things. So here is an assumption: let first param must be single letter.
             char[] tmp = expr.toCharArray();
             int replaceBegin = 0;
             for (int i = 1; i < tmp.length - 1; i++) {

@@ -5,18 +5,30 @@ package com.coolcat;
  */
 public class Node {
     Node(Operator op) {
-        this.data = 0;
+        this.data = 0.0;
         this.op = op;
     }
 
-    Node(Integer data) {
+    public Operator getOp() {
+        return op;
+    }
+
+    public void setData(Double data) {
+        this.data = data;
+    }
+
+    public Double getData() {
+        return data;
+    }
+
+    Node(Double data) {
         this.data = data;
         this.op = Operator.nil;
     }
 
-    Operator op;
+    final private Operator op;
 
-    Integer data;
+    private Double data;
 
     Node left;
 
