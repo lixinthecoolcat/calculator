@@ -1,5 +1,7 @@
 package com.coolcat;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +53,11 @@ public class Calculator {
                     System.out.println("Please enter expression or options.");
                     continue;
                 }
+                //support digits/numbers as expression ( no operations involved)
+                if (NumberUtils.isCreatable(input)) {
+                    doCalculate(input);
+                    continue;
+                }
                 if (input.charAt(0) == '-') {
                     String[] params = input.split(" ");
                     if (params[0].length() != 2) {
@@ -91,12 +98,14 @@ public class Calculator {
                     // here is the code path to do calculation
                     logger.info("Debugger lever is: " + logLevel);
                     logger.info("User inputs are: " + input);
+                    //regulate input ( trim, strip, case-insensitive) before parse. must have.
+                    input = StringUtils.deleteWhitespace(input).toLowerCase();
 
-                    //take input, sanity check. A simple check. Won't prevent thorough abuses, like add(1,i) will end up exceptions.
-                    doCalculate(validateInput(input));
+                    doCalculate(syntaxCheck(input));
                 }
             } catch (IllegalArgumentException e) {
-                logger.error(e.getMessage()); // syntax or other minor error do not exit, give user a chance to try again with correct typing.
+                // syntax or other minor error do not exit, give user a chance to try again with correct typing.
+                logger.error(e.getMessage());
 
             } catch (IOException e) {
                 logger.error(e.getCause());
@@ -134,10 +143,12 @@ public class Calculator {
             calculate(root.left);
             calculate(root.right);
 
-            if (root.getOp() != Operator.nil) {//we never build let node onto tree, so only check nil node (which is leaf nodes) is fine.
-                //root.data is overwritten by each step, since we need final result, we don't need keep intermediate calculated data
-                root.setData(root.getOp().operate(root));
+            //root.data is overwritten by each step, since we need final result, we don't need keep intermediate calculated data
+            Double result = root.operate();
+            if(result.equals(Double.NEGATIVE_INFINITY) || result.equals(Double.POSITIVE_INFINITY)){
+                logger.warn("Divided by zero detected.");
             }
+            root.setData(result);
         }
 
     }

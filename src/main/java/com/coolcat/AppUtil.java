@@ -1,5 +1,6 @@
 package com.coolcat;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -17,7 +18,9 @@ class AppUtil {
     static final Character COMMA = ',';
     static final Character BRACKET_LEFT = '(';
     static final Character BRACKET_RIGHT = ')';
-
+    static final String UNSUPPORTED = "Syntax error: contain unsupported characters.";
+    static final String UNBALANCED = "Syntax error: missing brackets.";
+    static final String INVALID_LET_VALUE_NAME = "Syntax error: let expr's value name should be single letter.";
     /**
      * When a expr stripped operator and out layer of brackets, the first comma
      * after balanced bracket pairs is the one separating this particular expr's arguments
@@ -38,9 +41,13 @@ class AppUtil {
             if (input.charAt(i) == BRACKET_RIGHT) {
                 layer--;
             }
-            if ((i == input.length() - 1 || input.charAt(i) == COMMA) && layer == 0) {
+            if (input.charAt(i) == COMMA && layer == 0) {
                 position = i;
                 break;
+            }
+            //or it is the last sub-exp, find comma will return the length of the input.
+            if(i == input.length() - 1){
+                position = i;
             }
         }
         return position;
@@ -62,10 +69,10 @@ class AppUtil {
     /**
      * A simple syntax check for input before process it.
      *
-     * @param input input String
+     * @param input input String regulated ( no space in it)
      * @return boolean
      */
-    static String validateInput(String input) {
+    static String syntaxCheck(String input) {
         int layer = 0;
         boolean balanced = false;
         boolean hasInvalidCh;
@@ -82,22 +89,17 @@ class AppUtil {
             balanced = true;
         }
         if (!balanced) {
-            throw new IllegalArgumentException("Syntax error: missing brackets");
+            throw new IllegalArgumentException(UNBALANCED);
         }
-        // In the cases when there are space inside expr, trim won't help. Using writer to remove space so we can compare later
-        StringWriter stringWriterOriginal = new StringWriter();
-        input.chars().mapToObj(i -> (char) i).filter(a -> !Character.isSpaceChar(a)).forEach(stringWriterOriginal::write);
-
         StringWriter stringWriterAfterFilter = new StringWriter();
         input.chars().mapToObj(i -> (char) i).filter(a -> Character.isAlphabetic(a) || Character.isDigit(a) ||
-                (a == BRACKET_LEFT) || (a == BRACKET_RIGHT) || (a == COMMA)).forEach(stringWriterAfterFilter::write);
+                (a == BRACKET_LEFT) || (a == BRACKET_RIGHT) || (a == COMMA) || (a == '-')).forEach(stringWriterAfterFilter::write);
 
-
-        hasInvalidCh = !stringWriterOriginal.toString().equals(stringWriterAfterFilter.toString());
+        hasInvalidCh = !input.equals(stringWriterAfterFilter.toString());
         if (hasInvalidCh) {
-            throw new IllegalArgumentException("Syntax error: contain unsupported characters");
+            throw new IllegalArgumentException(UNSUPPORTED);
         }
-        return stringWriterOriginal.toString();
+        return input;
 
     }
 
@@ -108,33 +110,39 @@ class AppUtil {
      * @return expression string without let
      */
     static String preProcess(String input) {
-        int letLayerLength = "let(".length();
+        String op = Operator.let.name();
+        int letLayerLength = op.length()+1; // "let("
         //go from left to right, locate value exp and get the value, replace value name in exp by calculated
         //value, repeat, until no let and only normal operations
         String expr = input;
-        while (input.contains(Operator.let.name())) {
-            int letPos = input.indexOf(Operator.let.name());
+        while (input.contains(op)) {
+            int letPos = input.indexOf(op);
             int letEnd = findCommaPosition(input.substring(letPos)) + letPos;
+
             int vNamePos = findCommaPosition(input.substring(letPos + letLayerLength));
-            String vName = input.substring(letPos + letLayerLength, letPos + letLayerLength + vNamePos);//"let("
+            String vName = input.substring(letPos + letLayerLength, letPos + letLayerLength + vNamePos);
+
             int subStrBeginAt = letPos + letLayerLength + vName.length() + 1;
+
             int vValuePos = findCommaPosition(input.substring(subStrBeginAt));
             String vValue = input.substring(subStrBeginAt, subStrBeginAt + vValuePos);
+
             expr = input.substring(subStrBeginAt + vValuePos + 1, letEnd);
-            if (vValue.contains(Operator.let.name())) {
+
+            if (vValue.contains(op)) {
                 vValue = preProcess(vValue);
             }
 
             /*Since we don't know what embedded in let exp, f.g. let(a,10,add(a,a)), here is a bit tricky part.
             because we don't want to replace letter 'a' as part of "add", but do want to replace the 'a' as part of (a,a)
             I am sure there will be a way to solve it. But it will add code complicity without any gain.
-            After all, the value name in let expr is just a symbol.It make no improvement for functional or user experience
+            After all, the value name in let expr is just a symbol.It makes no improvement for functional nor user experience
             to use any length of string to be the value name.Simple way is to define a syntax requirement for let,
             only use single letter as variable name.
             So here is an assumption(#2): let first param must be single letter.
             */
             if (vName.length() > 1) {
-                throw new IllegalArgumentException("let expr's value name should be single letter. ");
+                throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
             }
 
             char[] tmp = expr.toCharArray();
@@ -154,7 +162,7 @@ class AppUtil {
             replaceBegin = 0;
             tmp = expr.toCharArray();
             for (int i = 1; i < tmp.length - 1; i++) {
-                //looking for left argument
+                //looking for right argument
                 if (tmp[i] == vName.charAt(0) && tmp[i + 1] == BRACKET_RIGHT && tmp[i - 1] == COMMA) {
                     replaceBegin = i;
                     break;
@@ -164,8 +172,10 @@ class AppUtil {
             if (replaceBegin != 0) {
                 expr = expr.substring(0, replaceBegin) + vValue + expr.substring(replaceBegin + 1);
             }
-            return expr;
+            //before going out, put whole string together. let can be in the middle, so we still need the first part.
+            return input.substring(0,letPos)+expr;
         }
+        // here no let be translated, so can use expr as return, which is the input intact.
         return expr;
     }
 }

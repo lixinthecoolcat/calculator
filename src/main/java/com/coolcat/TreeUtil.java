@@ -12,7 +12,9 @@ import static com.coolcat.AppUtil.*;
  * @author cool cat
  */
 class TreeUtil {
-
+    public static final String INVALID_LEAF = " Syntax error: expression has invalid value. It should be an Integer value.";
+    public static final String INVALID_OP = "Syntax error: unrecognized operator.";
+    public static final String INVALIDE_ARGUMENT ="Syntax error: arguments in operator methods requires to be two, separated by comma.";
     private enum Direction {
         left,
         right
@@ -27,7 +29,7 @@ class TreeUtil {
         //have a non-null root first before recursive loop
         if (rootNode == null) {
             //if input is a digit: it is a leaf. return directly
-            if(NumberUtils.isCreatable(input)){ //isCreatable is the newer way to say isNumber
+            if(NumberUtils.isCreatable(input)){
                 return new Node(NumberUtils.toDouble(input));
             }
             rootNode = new Node(findOperator(input));
@@ -36,8 +38,9 @@ class TreeUtil {
         if (!input.isEmpty()) {
 
             if (!input.contains(Character.toString(COMMA))) {
-                // no comma means down to digit, set input empty to get out.
-                input = "";
+                //after stripping a layer of op and brackets, we are expecting expr|digit,expr|digit format here
+                //no comma means only one argument in this outermost layer of expr
+                throw new IllegalArgumentException(INVALIDE_ARGUMENT);
             }
             int position = findCommaPosition(input);
             String left = input.substring(0, position);
@@ -58,6 +61,9 @@ class TreeUtil {
             current = new Node(op);
             str = stripLayer(str, op);
         } else {// data node
+            if(!NumberUtils.isCreatable(str)){
+                throw new IllegalArgumentException(str + " in " + rootNode.getOp()+INVALID_LEAF);
+            }
             current = new Node(Double.parseDouble(str));
             str = "";
         }
@@ -82,7 +88,7 @@ class TreeUtil {
             cmd = input;
         }
         return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Syntax error: unrecognized operator."));
+                .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP));
     }
 
 }
