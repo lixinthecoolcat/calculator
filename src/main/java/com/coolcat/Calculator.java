@@ -86,7 +86,7 @@ public class Calculator {
                                 }
                             }
                             if (logLevel == null) {
-                                System.out.print("Syntax error in -e option: it can only be INFO,ERROR,TRACE or DEBUG");
+                                System.out.println("Syntax error in -e option: it can only be INFO,ERROR,TRACE or DEBUG");
                                 logLevel = Level.DEBUG;
                             }
                             break;

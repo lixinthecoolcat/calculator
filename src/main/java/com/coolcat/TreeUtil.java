@@ -13,8 +13,8 @@ import static com.coolcat.AppUtil.*;
  */
 class TreeUtil {
     public static final String INVALID_LEAF = " Syntax error: expression has invalid value. It should be an Integer value.";
-    public static final String INVALID_OP = "Syntax error: unrecognized operator.";
-    public static final String INVALIDE_ARGUMENT ="Syntax error: arguments in operator methods requires to be two, separated by comma.";
+    public static final String INVALID_OP = "Syntax error: unrecognized operator:";
+    public static final String INVALID_ARGUMENT ="Syntax error: arguments in operator methods requires to be two, separated by comma.";
     private enum Direction {
         left,
         right
@@ -40,9 +40,9 @@ class TreeUtil {
             if (!input.contains(Character.toString(COMMA))) {
                 //after stripping a layer of op and brackets, we are expecting expr|digit,expr|digit format here
                 //no comma means only one argument in this outermost layer of expr
-                throw new IllegalArgumentException(INVALIDE_ARGUMENT);
+                throw new IllegalArgumentException(INVALID_ARGUMENT);
             }
-            int position = findCommaPosition(input);
+            int position = findCommaPosition(input).getKey();
             String left = input.substring(0, position);
             String right = input.substring(position + 1);
 
@@ -77,7 +77,14 @@ class TreeUtil {
     }
 
     private static String stripLayer(String input, Operator op) {
-        return input.substring(op.name().length() + 1, input.length() - 1);
+        //at least following op, you need a "(", then you will see syntax error upon that missing bracket.
+        if(input.length() <= op.name().length()){
+            throw new IllegalArgumentException(INVALID_INPUT);
+        }
+        if(findCommaPosition(input).getValue()!=0){
+            throw new IllegalArgumentException(UNBALANCED);
+        }
+        return input.substring(op.name().length() + 1, findCommaPosition(input).getKey());
     }
 
     private static Operator findOperator(String input) {
@@ -88,7 +95,7 @@ class TreeUtil {
             cmd = input;
         }
         return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP));
+                .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP+cmd));
     }
 
 }

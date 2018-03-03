@@ -1,12 +1,14 @@
 package com.coolcat;
 
-import org.apache.commons.lang3.StringUtils;
+import javafx.util.Pair;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import java.io.StringWriter;
+import java.util.Arrays;
 
 /**
  * Utility class for app
@@ -21,6 +23,8 @@ class AppUtil {
     static final String UNSUPPORTED = "Syntax error: contain unsupported characters.";
     static final String UNBALANCED = "Syntax error: missing brackets.";
     static final String INVALID_LET_VALUE_NAME = "Syntax error: let expr's value name should be single letter.";
+    static final String INVALID_LET_EXPR = "Syntax error: let expr requires 3 arguments.";
+    static final String INVALID_INPUT = "Syntax error: invalid input.";
     /**
      * When a expr stripped operator and out layer of brackets, the first comma
      * after balanced bracket pairs is the one separating this particular expr's arguments
@@ -28,7 +32,11 @@ class AppUtil {
      * @param input input string
      * @return find pos for outer layer argument delimiter
      */
-    public static int findCommaPosition(String input) {
+    //Usually we aim one-method-do-one-thing, but here layer and position are tightly intertwined.
+    //breaking them into two, will likely bring in duplicated code and hard to get logic since they are so low level.
+    //therefore we use one method to get two return values as a Pair, key is the position, value is an indication of whether
+    //input is bracket balanced.
+    public static Pair<Integer,Integer> findCommaPosition(String input) {
         // layer of expressions
         int layer = 0;
         // the comma position for outermost layer argument
@@ -50,7 +58,7 @@ class AppUtil {
                 position = i;
             }
         }
-        return position;
+        return new Pair<>(position,layer);
     }
 
     /**
@@ -73,30 +81,25 @@ class AppUtil {
      * @return boolean
      */
     static String syntaxCheck(String input) {
-        int layer = 0;
-        boolean balanced = false;
-        boolean hasInvalidCh;
-        for (int i = 0; i < input.length(); i++) {
-            if (input.charAt(i) == BRACKET_LEFT) {
-                layer++;
-
-            }
-            if (input.charAt(i) == BRACKET_RIGHT) {
-                layer--;
-            }
+        //input should be either a) Numbers b) expressions which should have operator(arg1, arg2) format.
+        if(!NumberUtils.isCreatable(input) && !isExpression(input))
+        {
+            throw new IllegalArgumentException(INVALID_INPUT);
         }
-        if (layer == 0) {
-            balanced = true;
+        //ok, pass first guard, if you are an expr, do you have matching brackets?
+        if(isExpression(input)&& (!input.contains(Character.toString(BRACKET_LEFT)) || !input.contains(Character.toString(COMMA)))){
+            throw new IllegalArgumentException(INVALID_INPUT);
         }
-        if (!balanced) {
+        //check whether brackets are in pairs
+        if (findCommaPosition(input).getValue() != 0) {
             throw new IllegalArgumentException(UNBALANCED);
         }
+        //check whether there are any char not in the supported list ( 0-9,a-z,A-Z,'(',')','-',',')
         StringWriter stringWriterAfterFilter = new StringWriter();
         input.chars().mapToObj(i -> (char) i).filter(a -> Character.isAlphabetic(a) || Character.isDigit(a) ||
                 (a == BRACKET_LEFT) || (a == BRACKET_RIGHT) || (a == COMMA) || (a == '-')).forEach(stringWriterAfterFilter::write);
 
-        hasInvalidCh = !input.equals(stringWriterAfterFilter.toString());
-        if (hasInvalidCh) {
+        if (!input.equals(stringWriterAfterFilter.toString())) {
             throw new IllegalArgumentException(UNSUPPORTED);
         }
         return input;
@@ -117,16 +120,20 @@ class AppUtil {
         String expr = input;
         while (input.contains(op)) {
             int letPos = input.indexOf(op);
-            int letEnd = findCommaPosition(input.substring(letPos)) + letPos;
+            int letEnd = findCommaPosition(input.substring(letPos)).getKey() + letPos;
 
-            int vNamePos = findCommaPosition(input.substring(letPos + letLayerLength));
+            int vNamePos = findCommaPosition(input.substring(letPos + letLayerLength)).getKey();
             String vName = input.substring(letPos + letLayerLength, letPos + letLayerLength + vNamePos);
-
+            if(NumberUtils.isCreatable(vName)){
+                throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
+            }
             int subStrBeginAt = letPos + letLayerLength + vName.length() + 1;
 
-            int vValuePos = findCommaPosition(input.substring(subStrBeginAt));
+            int vValuePos = findCommaPosition(input.substring(subStrBeginAt)).getKey();
             String vValue = input.substring(subStrBeginAt, subStrBeginAt + vValuePos);
-
+            if(letEnd< subStrBeginAt+vValuePos+1){
+                throw new IllegalArgumentException(INVALID_LET_EXPR);
+            }
             expr = input.substring(subStrBeginAt + vValuePos + 1, letEnd);
 
             if (vValue.contains(op)) {
@@ -177,5 +184,8 @@ class AppUtil {
         }
         // here no let be translated, so can use expr as return, which is the input intact.
         return expr;
+    }
+    private static boolean isExpression(String input){
+        return Arrays.stream(Operator.values()).map(Operator::name).anyMatch(s->input.contains(s));
     }
 }

@@ -13,7 +13,8 @@ Besides the operator functions, this system supports command line options: -h an
 -h: print out help info
 -e: set log level [ERROR|DEBUG|TRACE|INFO]. Default is DEBUG
 
-Note: use fatJar task to build standalone executable jar file.
-Note: for better user experience, this system running in loop. Use crl-c to quit.
-Note: modify configure file if prefer log to file. Default is log to console.
+Note: 
+Use fatJar task to build standalone executable jar file.
+For better user experience, this system running in loop. Use crl-c to quit.
+Modify configure file if prefer log to file. Default is log to console.
 

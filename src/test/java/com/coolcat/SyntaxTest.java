@@ -3,6 +3,7 @@ package com.coolcat;
 import org.junit.Test;
 
 import static com.coolcat.AppUtil.*;
+import static com.coolcat.TreeUtil.INVALID_OP;
 import static com.coolcat.TreeUtil.parseNode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  /*
@@ -12,12 +13,17 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         make sure input string is regulated format.
      */
 
-public class UtilTest {
+public class SyntaxTest {
     private static final String INPUT_WITH_MISMATCHED_BRACKETS = "add(2,4)))";
     private static final String INPUT_WITH_INVALID_CHAR = "add(2,*)";
     private static final String INPUT_WITH_INVALID_LEAF_VALUE = "div(3,a)";
     private static final String INPUT_WITH_INVALID_OPERATOR = "mul(3,1)";
     private static final String INPUT_WITH_INVALID_ARGUMENTS = "add(1)";
+
+    private static final String INPUT_WITH_NON_OP_NOR_DIGIT = "ahha";
+    private static final String INPUT_WITH_ONLY_OP = "sub";
+    private static final String INPUT_WITH_UNBLANCED_BRACKETS = "add(1,2";
+    private static final String INPUT_WITH_MORE_ARGUMENTS = "mult(3,1,4)";
 
     @Test
     public void testSyntaxCheckWithMissingBracket() {
@@ -52,7 +58,7 @@ public class UtilTest {
         try {
             parseNode(INPUT_WITH_INVALID_OPERATOR, null);
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).contains(TreeUtil.INVALID_OP);
+            assertThat(e.getMessage()).contains(INVALID_OP);
         }
     }
     @Test
@@ -60,7 +66,42 @@ public class UtilTest {
         try {
             parseNode(INPUT_WITH_INVALID_ARGUMENTS, null);
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).contains(TreeUtil.INVALIDE_ARGUMENT);
+            assertThat(e.getMessage()).contains(TreeUtil.INVALID_ARGUMENT);
+        }
+    }
+
+    @Test
+    public void testParseNodeWithMissingBrackets() {
+        try {
+            parseNode(INPUT_WITH_UNBLANCED_BRACKETS, null);
+        }catch (IllegalArgumentException e){
+            assertThat(e.getMessage()).isEqualTo(UNBALANCED);
+        }
+    }
+
+    @Test
+    public void testParseNodeWithMoreArguments() {
+        try {
+            parseNode(INPUT_WITH_MORE_ARGUMENTS, null);
+        }catch (IllegalArgumentException e){
+            assertThat(e.getMessage()).contains(INVALID_OP);
+        }
+    }
+
+    @Test
+    public void testParseNodeWithNonOpNorDigit() {
+        try {
+            parseNode(INPUT_WITH_NON_OP_NOR_DIGIT, null);
+        }catch (IllegalArgumentException e){
+            assertThat(e.getMessage()).contains(INVALID_OP);
+        }
+    }
+    @Test
+    public void testParseNodeWithOnlyOp() {
+        try {
+            parseNode(INPUT_WITH_ONLY_OP, null);
+        }catch (IllegalArgumentException e){
+            assertThat(e.getMessage()).isEqualTo(INVALID_INPUT);
         }
     }
 }
