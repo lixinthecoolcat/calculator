@@ -1,5 +1,7 @@
 package com.coolcat;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 import java.util.Arrays;
 
 import static com.coolcat.AppUtil.*;
@@ -24,6 +26,10 @@ class TreeUtil {
     static Node parseNode(String input, Node rootNode) {
         //have a non-null root first before recursive loop
         if (rootNode == null) {
+            //if input is a digit: it is a leaf. return directly
+            if(NumberUtils.isCreatable(input)){ //isCreatable is the newer way to say isNumber
+                return new Node(NumberUtils.toDouble(input));
+            }
             rootNode = new Node(findOperator(input));
             input = stripLayer(input, rootNode.getOp());
         }
@@ -69,7 +75,12 @@ class TreeUtil {
     }
 
     private static Operator findOperator(String input) {
-        String cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
+        String cmd;
+        if(input.contains(Character.toString(BRACKET_LEFT))) {
+            cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
+        }else {
+            cmd = input;
+        }
         return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Syntax error: unrecognized operator."));
     }

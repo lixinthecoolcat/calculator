@@ -130,7 +130,7 @@ public class Calculator {
      */
     private static void calculate(Node root) {
         // Post order recursive to do calculate
-        if (root != null) {
+        if (root.getOp() != Operator.nil) {//root with nil op, is a leaf, no need to go further
             calculate(root.left);
             calculate(root.right);
 
