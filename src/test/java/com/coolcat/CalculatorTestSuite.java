@@ -5,9 +5,10 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        FunctionalBigPictureTest.class,
+        FunctionalLetOpTest.class,
         FunctionalEdgeCaseTest.class,
         FunctionalRandomTest.class,
+        FunctionalNormalOpTest.class,
         SyntaxTest.class
 })
 

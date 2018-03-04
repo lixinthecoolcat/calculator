@@ -1,7 +1,6 @@
 package com.coolcat;
 
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,6 +19,7 @@ public class FunctionalRandomTest {
 
     private static Random rand = new Random();
     private static List<String> opList;
+    private int availableOps = 4; //add,sub,mult,div=> these 4 we can generate randomly. let needs a bit extra work.
 
     @BeforeClass
     public static void setup() {
@@ -27,6 +27,7 @@ public class FunctionalRandomTest {
         opList = Arrays.stream(Operator.values()).filter(op -> !op.equals(Operator.nil) && !op.equals(Operator.let)).map(Operator::name)
                 .sorted().collect(Collectors.toList());
     }
+
     @Test
     public void testRandomNormalDoubleLayer() {
         String op = getRandomOp();
@@ -54,13 +55,13 @@ public class FunctionalRandomTest {
 
         int right = rand.nextInt();
 
-        String exp = buildRandomExpression(op, "a", Double.toString(right));
+        String exp = buildRandomExpression(op, "a", Integer.toString(right));
 
         int outer = rand.nextInt();
 
         String letExp = new StringBuilder().append("let(a,").append(outer).append(",").append(exp).append(")").toString();
 
-        System.out.println("Input Let Expression: " + letExp);
+        System.out.println("Random test input Let Expression: " + letExp);
 
         Double result = Calculator.doCalculate("let(a," + outer + "," + exp + ")");
 
@@ -75,7 +76,7 @@ public class FunctionalRandomTest {
         int left = rand.nextInt();
         int right = rand.nextInt();
 
-        Double result = Calculator.doCalculate(buildRandomExpression(op, Double.toString(left), Double.toString(right)));
+        Double result = Calculator.doCalculate(buildRandomExpression(op, Integer.toString(left), Integer.toString(right)));
 
         checkResults(op, left, right, result);
     }
@@ -83,7 +84,7 @@ public class FunctionalRandomTest {
     private String buildRandomExpression(String op, String left, String right) {
         String exp = new StringJoiner(",", op + "(", ")").add(left)
                 .add(right).toString();
-        System.out.println("Input: " + exp);
+        System.out.println("Random test input: " + exp);
         return exp;
     }
 
@@ -91,16 +92,16 @@ public class FunctionalRandomTest {
         Double expected = 0.0;
         switch (op) {
             case "add":
-                expected = (double)left + right;
+                expected = left + right;
                 break;
             case "sub":
-                expected = (double)left - right;
+                expected = left - right;
                 break;
             case "mult":
-                expected = (double)left * right;
+                expected = left * right;
                 break;
             case "div":
-                expected = (double)left / right;
+                expected = left / right;
                 break;
         }
         //checkResults can be called within sub-expr, therefore input can be double. With Double, comes concern of equality
@@ -114,6 +115,6 @@ public class FunctionalRandomTest {
     }
 
     private String getRandomOp() {
-        return opList.get(rand.nextInt(4));
+        return opList.get(rand.nextInt(availableOps));
     }
 }

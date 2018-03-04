@@ -12,12 +12,14 @@ import static com.coolcat.AppUtil.*;
  * @author cool cat
  */
 class TreeUtil {
-    public static final String INVALID_LEAF = " Syntax error: expression has invalid value. It should be an Integer value.";
-    public static final String INVALID_OP = "Syntax error: unrecognized operator:";
-    public static final String INVALID_ARGUMENT ="Syntax error: arguments in operator methods requires to be two, separated by comma.";
     private enum Direction {
         left,
         right
+    }
+
+    //overload a version for digit input. no tree is needed.
+    static Node parseNode(Integer input) {
+        return new Node(input.doubleValue());
     }
 
     /**
@@ -28,10 +30,6 @@ class TreeUtil {
     static Node parseNode(String input, Node rootNode) {
         //have a non-null root first before recursive loop
         if (rootNode == null) {
-            //if input is a digit: it is a leaf. return directly
-            if(NumberUtils.isCreatable(input)){
-                return new Node(NumberUtils.toDouble(input));
-            }
             rootNode = new Node(findOperator(input));
             input = stripLayer(input, rootNode.getOp());
         }
@@ -61,10 +59,11 @@ class TreeUtil {
             current = new Node(op);
             str = stripLayer(str, op);
         } else {// data node
-            if(!NumberUtils.isCreatable(str)){
-                throw new IllegalArgumentException(str + " in " + rootNode.getOp()+INVALID_LEAF);
+            if (!NumberUtils.isCreatable(str)) {
+                throw new IllegalArgumentException(str + " in " + rootNode.getOp() + INVALID_LEAF);
             }
             current = new Node(Double.parseDouble(str));
+            //set str empty to get out of recursion
             str = "";
         }
 
@@ -77,25 +76,27 @@ class TreeUtil {
     }
 
     private static String stripLayer(String input, Operator op) {
-        //at least following op, you need a "(", then you will see syntax error upon that missing bracket.
-        if(input.length() <= op.name().length()){
+        //we do some syntax checking along the way, try to beat input abuse as much as we can
+        if (input.length() <= op.name().length()) {
             throw new IllegalArgumentException(INVALID_INPUT);
         }
-        if(findCommaPosition(input).getValue()!=0){
+        if (findCommaPosition(input).getValue() != 0) {
             throw new IllegalArgumentException(UNBALANCED);
         }
         return input.substring(op.name().length() + 1, findCommaPosition(input).getKey());
     }
 
     private static Operator findOperator(String input) {
-        String cmd;
-        if(input.contains(Character.toString(BRACKET_LEFT))) {
-            cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
-        }else {
-            cmd = input;
+        if (input.contains(Character.toString(BRACKET_LEFT))) {
+            String cmd = input.substring(0, input.indexOf(Character.toString(BRACKET_LEFT)));
+            return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP + cmd));
+        } else {
+            Operator operator = Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(input))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP + input));
+            throw new IllegalArgumentException(MISSING_ARGUMENTS + operator);
         }
-        return Arrays.stream(Operator.values()).filter(o -> o.name().equalsIgnoreCase(cmd))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException(INVALID_OP+cmd));
+
     }
 
 }

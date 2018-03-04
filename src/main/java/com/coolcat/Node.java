@@ -3,7 +3,7 @@ package com.coolcat;
 /**
  * @author cool cat
  */
-class Node{
+class Node {
     Node(Operator op) {
         this.data = 0.0;
         this.op = op;
@@ -34,7 +34,7 @@ class Node{
 
     Node right;
 
-    public Double operate() {
-        return getOp().operate(left.getData(),right.getData());
+    public Double calculate() {
+        return getOp().operate(left.getData(), right.getData());
     }
 }
