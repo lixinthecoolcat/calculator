@@ -60,7 +60,7 @@ class TreeUtil {
             str = stripLayer(str, op);
         } else {// data node
             if (!NumberUtils.isCreatable(str)) {
-                throw new IllegalArgumentException(str + " in " + rootNode.getOp() + INVALID_LEAF);
+                throw new IllegalArgumentException(INVALID_LEAF_NODE);
             }
             current = new Node(Double.parseDouble(str));
             //set str empty to get out of recursion
@@ -76,7 +76,6 @@ class TreeUtil {
     }
 
     private static String stripLayer(String input, Operator op) {
-        //we do some syntax checking along the way, try to beat input abuse as much as we can
         if (input.length() <= op.name().length()) {
             throw new IllegalArgumentException(INVALID_INPUT);
         }

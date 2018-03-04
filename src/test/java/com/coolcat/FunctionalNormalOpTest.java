@@ -11,7 +11,7 @@ public class FunctionalNormalOpTest {
     private static final String OP_SIMPLE = "add(1,2)";
     private static final String ONLY_INTEGER = "2";
     private static final String ONLY_DECIMAL = "2.0";
-    private static final String ONLY_INTEGER_V1 = "-1";
+    private static final String ONLY_INTEGER_NEGTIVE = "-1";
 
     @Test
     public void testOperatorWithMultiLayer() {
@@ -42,8 +42,8 @@ public class FunctionalNormalOpTest {
 
     @Test
     public void testSimpleIntegerV1() {
-        Double result = Calculator.doCalculate(ONLY_INTEGER_V1);
-        assertThat(result).isEqualTo(NumberUtils.toDouble(ONLY_INTEGER_V1));
+        Double result = Calculator.doCalculate(ONLY_INTEGER_NEGTIVE);
+        assertThat(result).isEqualTo(NumberUtils.toDouble(ONLY_INTEGER_NEGTIVE));
     }
 
     @Test(expected = NumberFormatException.class)

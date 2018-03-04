@@ -13,7 +13,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
      */
 
 public class SyntaxTest {
-    private static final String INPUT_WITH_MISMATCHED_BRACKETS = "add(2,4)))";
+    private static final String INPUT_WITH_UNBALANCED_BRACKETS_EXTRA_RIGHT = "add(2,4)))";
     private static final String INPUT_WITH_INVALID_CHAR = "add(2,*)";
     private static final String INPUT_WITH_INVALID_LEAF_VALUE = "div(3,a)";
     private static final String INPUT_WITH_INVALID_OPERATOR = "mul(3,1)";
@@ -21,13 +21,13 @@ public class SyntaxTest {
 
     private static final String INPUT_WITH_NON_OP_NOR_DIGIT = "ahha";
     private static final String INPUT_WITH_ONLY_OP = "sub";
-    private static final String INPUT_WITH_UNBALANCED_BRACKETS = "add(1,2";
+    private static final String INPUT_WITH_UNBALANCED_BRACKETS_MISSING_RIGHT = "add(1,2";
     private static final String INPUT_WITH_MORE_ARGUMENTS = "mult(3,1,4)";
 
     @Test
     public void testSyntaxCheckWithMissingBracket() {
         try {
-            syntaxCheck(INPUT_WITH_MISMATCHED_BRACKETS);
+            syntaxCheck(INPUT_WITH_UNBALANCED_BRACKETS_MISSING_RIGHT);
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage()).isEqualTo(UNBALANCED);
         }
@@ -48,7 +48,7 @@ public class SyntaxTest {
         try {
             parseNode(INPUT_WITH_INVALID_LEAF_VALUE, null);
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).contains(INVALID_LEAF);
+            assertThat(e.getMessage()).contains(INVALID_LEAF_NODE);
         }
     }
 
@@ -73,7 +73,7 @@ public class SyntaxTest {
     @Test
     public void testParseNodeWithMissingBrackets() {
         try {
-            parseNode(INPUT_WITH_UNBALANCED_BRACKETS, null);
+            parseNode(INPUT_WITH_UNBALANCED_BRACKETS_MISSING_RIGHT, null);
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage()).isEqualTo(UNBALANCED);
         }

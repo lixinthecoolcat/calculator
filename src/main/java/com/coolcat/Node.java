@@ -9,18 +9,6 @@ class Node {
         this.op = op;
     }
 
-    public Operator getOp() {
-        return op;
-    }
-
-    public void setData(Double data) {
-        this.data = data;
-    }
-
-    public Double getData() {
-        return data;
-    }
-
     Node(Double data) {
         this.data = data;
         this.op = Operator.nil;
@@ -34,7 +22,20 @@ class Node {
 
     Node right;
 
+    public Operator getOp() {
+        return op;
+    }
+
+    public void setData(Double data) {
+        this.data = data;
+    }
+
+    public Double getData() {
+        return data;
+    }
+
+
     public Double calculate() {
-        return getOp().operate(left.getData(), right.getData());
+        return op.operate(left.getData(), right.getData());
     }
 }

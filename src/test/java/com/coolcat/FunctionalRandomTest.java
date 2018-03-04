@@ -19,7 +19,8 @@ public class FunctionalRandomTest {
 
     private static Random rand = new Random();
     private static List<String> opList;
-    private int availableOps = 4; //add,sub,mult,div=> these 4 we can generate randomly. let needs a bit extra work.
+    private int availableOps = 4; //add,sub,mult,div=> these 4 we can generate randomly. let needs a bit extra work but covered below as well.
+    private String letTestValueName = "a";
 
     @BeforeClass
     public static void setup() {
@@ -51,19 +52,19 @@ public class FunctionalRandomTest {
 
     @Test
     public void testRandomCombinationWithLet() {
-        String op = opList.get(rand.nextInt(4));
+        String op = opList.get(rand.nextInt(availableOps));
 
         int right = rand.nextInt();
 
-        String exp = buildRandomExpression(op, "a", Integer.toString(right));
+        String exp = buildRandomExpression(op, letTestValueName, Integer.toString(right));
 
         int outer = rand.nextInt();
 
-        String letExp = new StringBuilder().append("let(a,").append(outer).append(",").append(exp).append(")").toString();
+        String letExp = new StringBuilder().append("let(").append(letTestValueName).append(",").append(outer).append(",").append(exp).append(")").toString();
 
         System.out.println("Random test input Let Expression: " + letExp);
 
-        Double result = Calculator.doCalculate("let(a," + outer + "," + exp + ")");
+        Double result = Calculator.doCalculate(letExp);
 
         checkResults(op, outer, right, result);
 
@@ -71,7 +72,7 @@ public class FunctionalRandomTest {
 
     @Test
     public void testRandomCombinationNormalOp() {
-        String op = opList.get(rand.nextInt(4));
+        String op = opList.get(rand.nextInt(availableOps));
 
         int left = rand.nextInt();
         int right = rand.nextInt();

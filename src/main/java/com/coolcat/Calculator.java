@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.coolcat.AppUtil.*;
 import static com.coolcat.TreeUtil.parseNode;
@@ -61,7 +65,7 @@ public class Calculator {
                 if (input.charAt(0) == '-') {
                     String[] params = input.split(SPACE);
                     if (params[0].length() != 2) {
-                        throw new IllegalArgumentException("This system only supports short options.");
+                        throw new IllegalArgumentException("This system only supports short options.type -h for help info.");
                     }
                     char option = params[0].charAt(1);
                     switch (option) {
@@ -79,27 +83,24 @@ public class Calculator {
                                 System.out.println("Please enter level value following -e ");
                                 continue;
                             }
-                            for (Level level : Level.values()) {
-                                if (params[1].trim().equalsIgnoreCase(level.name())) {
-                                    logLevel = level;
-                                    setLogLevel(logLevel);
-                                    System.out.println("Set logging level to : " + logLevel.name());
-                                    break;
-                                }
-                            }
-                            if (logLevel == null) {
-                                System.out.println("Syntax error in -e option: it can only be INFO,ERROR,TRACE or DEBUG");
-                                logLevel = Level.DEBUG;
-                            }
+
+                            logLevel = Arrays.stream(Level.values()).filter(o -> o.name().equalsIgnoreCase(params[1]))
+                                    .findFirst().orElseThrow(() -> new IllegalArgumentException("Syntax error in -e option: it can only be INFO,ERROR,TRACE or DEBUG"));
+
+                            setLogLevel(logLevel);
+                            System.out.println("Set logging level to : " + logLevel.name());
+
                             break;
                         default:
-                            throw new IllegalArgumentException("Option syntax error. use -h to read help info.");
+                            throw new IllegalArgumentException("Option syntax error. type -h for help info.");
                     }
 
                 } else {
                     // here is the code path to do calculation
-                    System.out.println("Set default logging level : DEBUG");
-                    logLevel = Level.DEBUG;
+                    if(logLevel == null) {
+                        System.out.println("Set default logging level : DEBUG");
+                        logLevel = Level.DEBUG;
+                    }
                     logger.info("Logging lever is: " + logLevel);
                     logger.info("User inputs are: " + input);
                     //regulate input ( trim, strip, case-insensitive) before parse. must have.
@@ -128,7 +129,7 @@ public class Calculator {
     //Using Double is a simplify and knowing design choice with assumption (#1)of the users for this tool are not bankers
     public static Double doCalculate(String input) {
         Node rootNode;
-        while (input.contains(Operator.let.name())) {
+        while (input.contains(OP_LET)) {
             input = preProcess(input);
         }
 
@@ -149,9 +150,11 @@ public class Calculator {
     /**
      * @param root root node of operator tree
      */
+
+    // Post order recursive to do calculate
     private static void calculate(Node root) {
-        // Post order recursive to do calculate
-        if (root.getOp() != Operator.nil) {//root with nil op, is a leaf, no need to go further
+        //root with nil op, is a leaf, no need to go further
+        if (root.getOp() != Operator.nil) {
             calculate(root.left);
             calculate(root.right);
 

@@ -44,22 +44,22 @@ public class FunctionalEdgeCaseTest {
     @Test
     public void testEdgeMultZero() {
         String inputLeft = "0";
-        String inputRight = "-2";
-
-        Double result = Calculator.doCalculate(buildInput(Operator.mult, inputLeft, inputRight));
-
-        assertThat(result).isEqualTo(-0.0);
-
-    }
-
-    @Test
-    public void testEdgeMultZeroAndSign() {
-        String inputLeft = "0";
         String inputRight = "2";
 
         Double result = Calculator.doCalculate(buildInput(Operator.mult, inputLeft, inputRight));
 
         assertThat(result).isEqualTo(0.0);
+
+    }
+
+    @Test
+    public void testEdgeMultZeroWithSign() {
+        String inputLeft = "0";
+        String inputRight = "-2";
+
+        Double result = Calculator.doCalculate(buildInput(Operator.mult, inputLeft, inputRight));
+
+        assertThat(result).isEqualTo(-0.0);
 
     }
 
