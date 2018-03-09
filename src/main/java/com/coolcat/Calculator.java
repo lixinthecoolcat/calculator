@@ -10,9 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import static com.coolcat.AppUtil.*;
 import static com.coolcat.TreeUtil.parseNode;
@@ -97,7 +94,7 @@ public class Calculator {
 
                 } else {
                     // here is the code path to do calculation
-                    if(logLevel == null) {
+                    if (logLevel == null) {
                         System.out.println("Set default logging level : DEBUG");
                         logLevel = Level.DEBUG;
                     }

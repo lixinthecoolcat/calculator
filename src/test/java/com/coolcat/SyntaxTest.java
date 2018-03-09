@@ -25,6 +25,15 @@ public class SyntaxTest {
     private static final String INPUT_WITH_MORE_ARGUMENTS = "mult(3,1,4)";
 
     @Test
+    public void testSyntaxCheckWithExtraBracket() {
+        try {
+            syntaxCheck(INPUT_WITH_UNBALANCED_BRACKETS_EXTRA_RIGHT);
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo(UNBALANCED);
+        }
+    }
+
+    @Test
     public void testSyntaxCheckWithMissingBracket() {
         try {
             syntaxCheck(INPUT_WITH_UNBALANCED_BRACKETS_MISSING_RIGHT);

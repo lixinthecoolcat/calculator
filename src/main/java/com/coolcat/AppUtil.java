@@ -1,6 +1,5 @@
 package com.coolcat;
 
-import javafx.util.Pair;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -40,11 +39,7 @@ class AppUtil {
      * @param input input string
      * @return find pos for outer layer argument delimiter
      */
-    //Usually we aim one-method-do-one-thing, but here layer and position are tightly intertwined.
-    //breaking them into two, will likely bring in duplicated code and hard-to-get logic since they are so low level.
-    //therefore we use one method to get two return values as a Pair, key is the position, value is an indication of whether
-    //input is bracket balanced.
-    public static Pair<Integer, Integer> findCommaPosition(String input) {
+     public static int findCommaPositionOrEnd(String input) {
         // layer of expressions
         int layer = 0;
         // the comma position for outermost layer argument
@@ -66,7 +61,28 @@ class AppUtil {
                 position = i;
             }
         }
-        return new Pair<>(position, layer);
+        return position;
+    }
+
+    //when the end is comma, we need move back one more spot to find the right bracket
+    public static int findOuterLayerRightBracket(String input, int index){
+        return  input.charAt(index) == COMMA? index-1 : index;
+    }
+
+    public static boolean isCommaBalanced(String input) {
+        int layer = 0;
+        for (int i = 0; i < input.length(); i++) {
+            if (input.charAt(i) == BRACKET_LEFT) {
+                layer++;
+
+            }
+            if (input.charAt(i) == BRACKET_RIGHT) {
+                layer--;
+            }
+
+        }
+
+        return layer == 0;
     }
 
     /**
@@ -98,7 +114,7 @@ class AppUtil {
             throw new IllegalArgumentException(MISSING_ARGUMENTS);
         }
         //check whether brackets are in pairs
-        if (findCommaPosition(input).getValue() != 0) {
+        if (!isCommaBalanced(input)) {
             throw new IllegalArgumentException(UNBALANCED);
         }
         //check whether there are any char not in the supported list ( 0-9,a-z,A-Z,'(',')','-',',')
@@ -122,10 +138,11 @@ class AppUtil {
     static String preProcess(String input) {
         //go from left to right, locate value exp and get the value, replace value name in exp by calculated value
         int letPos = input.indexOf(OP_LET);
-        int letEnd = findCommaPosition(input.substring(letPos)).getKey() + letPos;
+        int letEnd = findCommaPositionOrEnd(input.substring(letPos)) + letPos;
+        int letLayerLeft = letPos + LET_LAYER_LENGTH;
 
-        int vNamePos = findCommaPosition(input.substring(letPos + LET_LAYER_LENGTH)).getKey();
-        String vName = input.substring(letPos + LET_LAYER_LENGTH, letPos + LET_LAYER_LENGTH + vNamePos);
+        int vNamePos = findCommaPositionOrEnd(input.substring(letLayerLeft));
+        String vName = input.substring(letLayerLeft, letLayerLeft + vNamePos);
 
         if (NumberUtils.isCreatable(vName)) {
             throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
@@ -142,20 +159,18 @@ class AppUtil {
             throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
         }
 
-        int subStrBeginAt = letPos + LET_LAYER_LENGTH + vName.length() + 1;
+        int subStrBeginAt = letLayerLeft + vName.length() + 1;
 
-        int vValuePos = findCommaPosition(input.substring(subStrBeginAt)).getKey();
+        int vValuePos = findCommaPositionOrEnd(input.substring(subStrBeginAt));
         String vValue = input.substring(subStrBeginAt, subStrBeginAt + vValuePos);
 
         if (letEnd < subStrBeginAt + vValuePos + 1) {
             throw new IllegalArgumentException(INVALID_LET_EXPR);
         }
 
-        if (input.charAt(letEnd) == COMMA) {
-            letEnd = letEnd - 1;
-        }
+        letEnd = findOuterLayerRightBracket(input,letEnd);
 
-        String expr = input.substring(subStrBeginAt + vValuePos + 1, input.charAt(letEnd) == COMMA ? letEnd - 1 : letEnd);
+        String expr = input.substring(subStrBeginAt + vValuePos + 1, letEnd);
 
         if (vValue.contains(OP_LET)) {
             vValue = preProcess(vValue);

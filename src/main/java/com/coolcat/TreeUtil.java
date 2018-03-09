@@ -40,7 +40,7 @@ class TreeUtil {
                 //no comma means only one argument in this outermost layer of expr
                 throw new IllegalArgumentException(INVALID_ARGUMENT);
             }
-            int position = findCommaPosition(input).getKey();
+            int position = findCommaPositionOrEnd(input);
             String left = input.substring(0, position);
             String right = input.substring(position + 1);
 
@@ -79,10 +79,10 @@ class TreeUtil {
         if (input.length() <= op.name().length()) {
             throw new IllegalArgumentException(INVALID_INPUT);
         }
-        if (findCommaPosition(input).getValue() != 0) {
+        if (!isCommaBalanced(input)) {
             throw new IllegalArgumentException(UNBALANCED);
         }
-        return input.substring(op.name().length() + 1, findCommaPosition(input).getKey());
+        return input.substring(op.name().length() + 1, findCommaPositionOrEnd(input));
     }
 
     private static Operator findOperator(String input) {
