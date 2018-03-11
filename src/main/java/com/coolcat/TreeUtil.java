@@ -79,7 +79,7 @@ class TreeUtil {
         if (input.length() <= op.name().length()) {
             throw new IllegalArgumentException(INVALID_INPUT);
         }
-        if (!isCommaBalanced(input)) {
+        if (!isBracketBalanced(input)) {
             throw new IllegalArgumentException(UNBALANCED);
         }
         return input.substring(op.name().length() + 1, findCommaPositionOrEnd(input));

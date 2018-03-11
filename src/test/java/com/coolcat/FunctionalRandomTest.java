@@ -1,6 +1,7 @@
 package com.coolcat;
 
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -18,9 +19,10 @@ public class FunctionalRandomTest {
 
 
     private static Random rand = new Random();
+    private static final int OP_NUM = 4; //add,sub,mult,div=> these 4 we can generate randomly. let needs a bit extra work but covered below as well.
+    private static final String VALUE_NAME = "a";
     private static List<String> opList;
-    private int availableOps = 4; //add,sub,mult,div=> these 4 we can generate randomly. let needs a bit extra work but covered below as well.
-    private String letTestValueName = "a";
+    private String op;
 
     @BeforeClass
     public static void setup() {
@@ -29,9 +31,13 @@ public class FunctionalRandomTest {
                 .sorted().collect(Collectors.toList());
     }
 
+    @Before
+    public void init() {
+        op = getRandomOp();
+    }
+
     @Test
     public void testRandomNormalDoubleLayer() {
-        String op = getRandomOp();
         Integer left = getRandomInteger();
         Integer right = getRandomInteger();
         String leftEx = buildRandomExpression(op, Integer.toString(left), Integer.toString(right));
@@ -52,15 +58,13 @@ public class FunctionalRandomTest {
 
     @Test
     public void testRandomCombinationWithLet() {
-        String op = opList.get(rand.nextInt(availableOps));
-
         int right = rand.nextInt();
 
-        String exp = buildRandomExpression(op, letTestValueName, Integer.toString(right));
+        String exp = buildRandomExpression(op, VALUE_NAME, Integer.toString(right));
 
         int outer = rand.nextInt();
 
-        String letExp = new StringBuilder().append("let(").append(letTestValueName).append(",").append(outer).append(",").append(exp).append(")").toString();
+        String letExp = new StringBuilder().append("let(").append(VALUE_NAME).append(",").append(outer).append(",").append(exp).append(")").toString();
 
         System.out.println("Random test input Let Expression: " + letExp);
 
@@ -72,8 +76,6 @@ public class FunctionalRandomTest {
 
     @Test
     public void testRandomCombinationNormalOp() {
-        String op = opList.get(rand.nextInt(availableOps));
-
         int left = rand.nextInt();
         int right = rand.nextInt();
 
@@ -116,6 +118,6 @@ public class FunctionalRandomTest {
     }
 
     private String getRandomOp() {
-        return opList.get(rand.nextInt(availableOps));
+        return opList.get(rand.nextInt(OP_NUM));
     }
 }

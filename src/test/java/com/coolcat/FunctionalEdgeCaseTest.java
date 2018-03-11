@@ -80,7 +80,7 @@ public class FunctionalEdgeCaseTest {
         String inputRight = Integer.toString(Integer.MAX_VALUE);
         Double result = Calculator.doCalculate(buildInput(Operator.mult, inputLeft, inputRight));
         //we ues double as node's data type. so we can handle input type (Integer)'s max/min values.
-        assertThat(result).isEqualTo(Double.valueOf(Integer.MAX_VALUE) * Double.valueOf(Integer.MAX_VALUE));
+        assertThat(result).isEqualTo((double) Integer.MAX_VALUE * (double) Integer.MAX_VALUE);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class FunctionalEdgeCaseTest {
         String inputLeft = Integer.toString(Integer.MIN_VALUE);
         String inputRight = Integer.toString(Integer.MIN_VALUE);
         Double result = Calculator.doCalculate(buildInput(Operator.add, inputLeft, inputRight));
-        assertThat(result).isEqualTo(Double.valueOf(Integer.MIN_VALUE) + Double.valueOf(Integer.MIN_VALUE));
+        assertThat(result).isEqualTo((double) Integer.MIN_VALUE + (double) Integer.MIN_VALUE);
     }
 
     private String buildInput(Operator op, String left, String right) {

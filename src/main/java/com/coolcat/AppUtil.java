@@ -65,11 +65,11 @@ class AppUtil {
     }
 
     //when the end is comma, we need move back one more spot to find the right bracket
-    public static int findOuterLayerRightBracket(String input, int index){
+    private static int findOuterLayerRightBracket(String input, int index){
         return  input.charAt(index) == COMMA? index-1 : index;
     }
 
-    public static boolean isCommaBalanced(String input) {
+    public static boolean isBracketBalanced(String input) {
         int layer = 0;
         for (int i = 0; i < input.length(); i++) {
             if (input.charAt(i) == BRACKET_LEFT) {
@@ -114,7 +114,7 @@ class AppUtil {
             throw new IllegalArgumentException(MISSING_ARGUMENTS);
         }
         //check whether brackets are in pairs
-        if (!isCommaBalanced(input)) {
+        if (!isBracketBalanced(input)) {
             throw new IllegalArgumentException(UNBALANCED);
         }
         //check whether there are any char not in the supported list ( 0-9,a-z,A-Z,'(',')','-',',')
@@ -138,11 +138,11 @@ class AppUtil {
     static String preProcess(String input) {
         //go from left to right, locate value exp and get the value, replace value name in exp by calculated value
         int letPos = input.indexOf(OP_LET);
-        int letEnd = findCommaPositionOrEnd(input.substring(letPos)) + letPos;
-        int letLayerLeft = letPos + LET_LAYER_LENGTH;
+        int letEndPos = findCommaPositionOrEnd(input.substring(letPos)) + letPos;
+        int letLayerLeftPos = letPos + LET_LAYER_LENGTH;
 
-        int vNamePos = findCommaPositionOrEnd(input.substring(letLayerLeft));
-        String vName = input.substring(letLayerLeft, letLayerLeft + vNamePos);
+        int vNamePos = findCommaPositionOrEnd(input.substring(letLayerLeftPos));
+        String vName = input.substring(letLayerLeftPos, letLayerLeftPos + vNamePos);
 
         if (NumberUtils.isCreatable(vName)) {
             throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
@@ -159,18 +159,18 @@ class AppUtil {
             throw new IllegalArgumentException(INVALID_LET_VALUE_NAME);
         }
 
-        int subStrBeginAt = letLayerLeft + vName.length() + 1;
+        int subStrBeginAt = letLayerLeftPos + vName.length() + 1;
 
         int vValuePos = findCommaPositionOrEnd(input.substring(subStrBeginAt));
         String vValue = input.substring(subStrBeginAt, subStrBeginAt + vValuePos);
 
-        if (letEnd < subStrBeginAt + vValuePos + 1) {
+        if (letEndPos < subStrBeginAt + vValuePos + 1) {
             throw new IllegalArgumentException(INVALID_LET_EXPR);
         }
 
-        letEnd = findOuterLayerRightBracket(input,letEnd);
+        letEndPos = findOuterLayerRightBracket(input,letEndPos);
 
-        String expr = input.substring(subStrBeginAt + vValuePos + 1, letEnd);
+        String expr = input.substring(subStrBeginAt + vValuePos + 1, letEndPos);
 
         if (vValue.contains(OP_LET)) {
             vValue = preProcess(vValue);
@@ -205,10 +205,10 @@ class AppUtil {
             expr = expr.substring(0, replaceBegin) + vValue + expr.substring(replaceBegin + 1);
         }
         //before going out, put whole string together. let can be in the middle, so we still need the first part and last part.
-        return input.substring(0, letPos) + expr + input.substring(letEnd + 1);
+        return input.substring(0, letPos) + expr + input.substring(letEndPos + 1);
     }
 
     private static boolean containExpression(String input) {
-        return Arrays.stream(Operator.values()).map(Operator::name).anyMatch(s -> input.contains(s));
+        return Arrays.stream(Operator.values()).map(Operator::name).anyMatch(input::contains);
     }
 }
