@@ -1,11 +1,11 @@
 language: java
-jdk: oraclejdk11
+jdk: oraclejdk9
 
 sudo: false
 addons:
   apt:
     packages:
-      - oracle-java11-installer
+      - oracle-java9-installer
 
 notifications:
 email: false
